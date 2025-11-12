@@ -1,0 +1,36 @@
+# Models
+models/teacher/*
+models/student/*
+!models/teacher/.gitkeep
+!models/student/.gitkeep
+
+# Results
+results/*
+!results/.gitkeep
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+
+# Large data files
+*.bin
+*.safetensors
+*.pt
+*.pth
