@@ -1,61 +1,58 @@
+# scripts/download_models_safe.py
 """
-Download models from HuggingFace Hub for offline use.
-Run this script on the net node (with internet access).
+Download model repository files from Hugging Face to a local folder WITHOUT loading into memory.
+Run on the net node (internet access).
 """
 
 import os
+import shutil
 from pathlib import Path
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from huggingface_hub import snapshot_download
 
-
-def download_model(model_name: str, save_path: str):
-    """Download model and tokenizer from HuggingFace Hub."""
-    print(f"\n{'='*60}")
-    print(f"Downloading: {model_name}")
-    print(f"Save to: {save_path}")
-    print(f"{'='*60}\n")
-    
-    os.makedirs(save_path, exist_ok=True)
-    
-    # Download tokenizer
-    print("Downloading tokenizer...")
-    tokenizer = AutoTokenizer.from_pretrained(
-        model_name,
-        trust_remote_code=True
+def download_model_files(repo_id: str, dest_dir: str, allow_patterns=None):
+    """
+    Uses snapshot_download to fetch model repo files. Copies result into dest_dir.
+    - repo_id: 'Qwen/Qwen-14B-Chat'
+    - dest_dir: local path to copy files into
+    - allow_patterns: list of glob patterns (optional) to restrict what is downloaded
+    """
+    dest = Path(dest_dir).expanduser().resolve()
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    print(f"\nDownloading repo `{repo_id}` into temporary cache (may take long)...")
+    # snapshot_download will place the repo under HF cache directory; returns path to that folder.
+    cache_path = snapshot_download(
+        repo_id,
+        repo_type="model",
+        allow_patterns=allow_patterns,  # None downloads everything
+        resume_download=True,
+        force_download=False,
     )
-    tokenizer.save_pretrained(save_path)
-    print("✓ Tokenizer saved")
-    
-    # Download model
-    print("Downloading model (this may take a while)...")
-    model = AutoModelForCausalLM.from_pretrained(
-        model_name,
-        trust_remote_code=True
-    )
-    model.save_pretrained(save_path)
-    print("✓ Model saved")
-    
-    print(f"\n✓ Successfully downloaded {model_name}\n")
-
+    print(f"Snapshot downloaded to cache: {cache_path}")
+    # copy to dest (merge if dest exists)
+    print(f"Copying files to final destination: {dest}")
+    shutil.copytree(cache_path, dest, dirs_exist_ok=True)
+    print(f"Done. Files available at: {dest}\n")
 
 if __name__ == "__main__":
-    # Get project root
     project_root = Path(__file__).parent.parent
-    
-    # Download teacher model (Qwen-14B-Chat)
-    teacher_path = project_root / "models" / "teacher"
-    download_model("Qwen/Qwen-14B-Chat", str(teacher_path))
-    
-    # Download student model (Qwen-7B)
-    student_path = project_root / "models" / "student"
-    download_model("Qwen/Qwen-7B", str(student_path))
-    
-    print("\n" + "="*60)
-    print("ALL MODELS DOWNLOADED SUCCESSFULLY")
+    models_root = project_root / "models"
+    teacher_dest = models_root / "teacher"
+    student_dest = models_root / "student"
+
+    # OPTIONAL: restrict to typical model files - helps skip large unrelated files
+    patterns = [
+        "*.json", "config.json", "tokenizer*", "*.txt", "*.py",
+        "*.bin", "*.safetensors", "pytorch_model*.bin", "pytorch_model*.safetensors",
+        "generation_config.json", "special_tokens_map.json", "vocab.json"
+    ]
+
     print("="*60)
-    print("\nYou can now run the pipeline on the offline GPU node.")
-    print("\nNext steps:")
-    print("1. Switch to GPU node")
-    print("2. Run: python scripts/gen_cot.py ...")
-    print("3. Run: accelerate launch scripts/train_cot_lora.py ...")
-    print("4. Run: python scripts/eval_cot.py ...")
+    print("Downloading teacher model repo (Qwen-14B-Chat)...")
+    download_model_files("Qwen/Qwen-14B-Chat", str(teacher_dest), allow_patterns=patterns)
+
+    print("Downloading student model repo (Qwen-7B)...")
+    download_model_files("Qwen/Qwen-7B", str(student_dest), allow_patterns=patterns)
+
+    print("\nALL MODELS DOWNLOADED (files only).")
+    print("Now copy/verify these folders are visible to your offline GPU node.")
+    print("="*60)
