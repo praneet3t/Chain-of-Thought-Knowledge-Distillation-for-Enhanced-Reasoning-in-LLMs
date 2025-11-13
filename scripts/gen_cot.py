@@ -18,12 +18,17 @@ def generate_cot(
     """Generate chain-of-thought reasoning using teacher model."""
     
     print(f"Loading teacher model from {teacher_model_path}...")
-    tokenizer = AutoTokenizer.from_pretrained(teacher_model_path, trust_remote_code=True)
+    tokenizer = AutoTokenizer.from_pretrained(
+        teacher_model_path,
+        trust_remote_code=True,
+        local_files_only=True
+    )
     model = AutoModelForCausalLM.from_pretrained(
         teacher_model_path,
         torch_dtype=torch.float16,
         device_map="auto",
-        trust_remote_code=True
+        trust_remote_code=True,
+        local_files_only=True
     )
     model.eval()
     

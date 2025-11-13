@@ -1,5 +1,6 @@
 import argparse
 import json
+import os
 from pathlib import Path
 import torch
 from transformers import (
@@ -47,13 +48,18 @@ def train_student_model(
         bnb_4bit_use_double_quant=True
     )
     
-    # Load model and tokenizer
-    tokenizer = AutoTokenizer.from_pretrained(student_model_path, trust_remote_code=True)
+    # Load model and tokenizer (offline mode)
+    tokenizer = AutoTokenizer.from_pretrained(
+        student_model_path,
+        trust_remote_code=True,
+        local_files_only=True
+    )
     model = AutoModelForCausalLM.from_pretrained(
         student_model_path,
         quantization_config=bnb_config,
         device_map="auto",
-        trust_remote_code=True
+        trust_remote_code=True,
+        local_files_only=True
     )
     
     # Set pad_token to eos_token if missing
@@ -108,11 +114,14 @@ def train_student_model(
         gradient_accumulation_steps=4,
         learning_rate=learning_rate,
         fp16=True,
-        logging_steps=50,
+        logging_steps=10,
         save_strategy="epoch",
         save_total_limit=2,
         report_to="none",
-        optim="paged_adamw_8bit"
+        optim="paged_adamw_8bit",
+        warmup_steps=50,
+        logging_dir=f"{output_dir}/logs",
+        ddp_find_unused_parameters=False
     )
     
     # Train

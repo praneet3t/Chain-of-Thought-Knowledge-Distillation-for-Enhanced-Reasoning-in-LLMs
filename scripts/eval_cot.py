@@ -18,12 +18,17 @@ def evaluate_model(
     """Evaluate fine-tuned model on test questions."""
     
     print(f"Loading base model from {base_model_path}...")
-    tokenizer = AutoTokenizer.from_pretrained(base_model_path, trust_remote_code=True)
+    tokenizer = AutoTokenizer.from_pretrained(
+        base_model_path,
+        trust_remote_code=True,
+        local_files_only=True
+    )
     base_model = AutoModelForCausalLM.from_pretrained(
         base_model_path,
         torch_dtype=torch.float16,
         device_map="auto",
-        trust_remote_code=True
+        trust_remote_code=True,
+        local_files_only=True
     )
     
     print(f"Loading LoRA weights from {lora_model_path}...")

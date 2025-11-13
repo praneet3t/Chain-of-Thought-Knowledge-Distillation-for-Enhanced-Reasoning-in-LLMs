@@ -1,5 +1,472 @@
-{"question": "What is 15% of 240?"}
-{"question": "If a train travels 120 km in 2 hours, what is its average speed?"}
-{"question": "Solve for x: 2x + 5 = 13"}
-{"question": "A rectangle has a length of 12 cm and a width of 8 cm. What is its area?"}
-{"question": "If 3 apples cost $2.40, how much do 7 apples cost?"}
+{"question": "What is 5% of 256?"}
+{"question": "What is 328 + 242?"}
+{"question": "Two numbers are in the ratio 4:6. If their sum is 170, what is the larger number?"}
+{"question": "A rectangle has a length of 23 cm and a width of 26 cm. What is its area in square cm?"}
+{"question": "What is 10/11 of 46?"}
+{"question": "Two numbers are in the ratio 6:7. If their sum is 156, what is the larger number?"}
+{"question": "Two numbers are in the ratio 4:6. If their sum is 170, what is the larger number?"}
+{"question": "What is 90% of 223?"}
+{"question": "What is 650 - 421?"}
+{"question": "Solve for x: 4x + 7 = 27"}
+{"question": "Calculate 58 × 45."}
+{"question": "What is 7/9 of 66?"}
+{"question": "What is 873 - 335?"}
+{"question": "What is 25% of 154?"}
+{"question": "Calculate 68 × 91."}
+{"question": "What is 10% of 485?"}
+{"question": "John is 45 years old now. How old was he 12 years ago?"}
+{"question": "A rectangle has a length of 13 cm and a width of 29 cm. What is its area in square cm?"}
+{"question": "Calculate 25 + 46 × 7."}
+{"question": "Two numbers are in the ratio 5:2. If their sum is 63, what is the larger number?"}
+{"question": "What is 990 + 106?"}
+{"question": "Two numbers are in the ratio 4:2. If their sum is 36, what is the larger number?"}
+{"question": "What is 10/9 of 47?"}
+{"question": "If one apple costs $3.55, how much do 10 apples cost?"}
+{"question": "What is 1380 ÷ 46?"}
+{"question": "Solve for x: 5x + 1 = 36"}
+{"question": "Solve for x: 9x - 7 = 146"}
+{"question": "Two numbers are in the ratio 8:4. If their sum is 144, what is the larger number?"}
+{"question": "A rectangle has a length of 15 cm and a width of 11 cm. What is its area in square cm?"}
+{"question": "Calculate 48 + 30 × 20."}
+{"question": "Calculate 30 × 69."}
+{"question": "Solve for x: 6x - 18 = 6"}
+{"question": "Solve for x: 5x - 6 = 79"}
+{"question": "Calculate 15 + 41 × 7."}
+{"question": "Solve for x: 5x - 9 = 1"}
+{"question": "What is 322 ÷ 14?"}
+{"question": "Two numbers are in the ratio 8:2. If their sum is 140, what is the larger number?"}
+{"question": "What is 1677 ÷ 39?"}
+{"question": "What is 15% of 266?"}
+{"question": "Calculate 44 + 18 × 9."}
+{"question": "What is 60% of 478?"}
+{"question": "What is 10% of 99?"}
+{"question": "Calculate 31 + 17 × 14."}
+{"question": "What is 50% of 177?"}
+{"question": "What is 1632 ÷ 34?"}
+{"question": "What is 10% of 223?"}
+{"question": "What is 854 + 204?"}
+{"question": "What is 5/12 of 20?"}
+{"question": "Two numbers are in the ratio 8:2. If their sum is 190, what is the larger number?"}
+{"question": "Two numbers are in the ratio 5:8. If their sum is 260, what is the larger number?"}
+{"question": "A rectangle has a length of 9 cm and a width of 20 cm. What is its area in square cm?"}
+{"question": "Calculate 44 × 99."}
+{"question": "John is 33 years old now. How old was he 10 years ago?"}
+{"question": "A rectangle has a length of 29 cm and a width of 5 cm. What is its area in square cm?"}
+{"question": "Calculate 37 + 20 × 19."}
+{"question": "Solve for x: 3x + 4 = 10"}
+{"question": "Two numbers are in the ratio 5:7. If their sum is 108, what is the larger number?"}
+{"question": "What is 50% of 196?"}
+{"question": "What is 15% of 393?"}
+{"question": "What is 5% of 351?"}
+{"question": "Two numbers are in the ratio 5:3. If their sum is 72, what is the larger number?"}
+{"question": "What is 40% of 147?"}
+{"question": "What is 5% of 86?"}
+{"question": "What is 716 + 127?"}
+{"question": "Two numbers are in the ratio 8:5. If their sum is 182, what is the larger number?"}
+{"question": "What is 40% of 386?"}
+{"question": "A car travels 127 km in 5 hours. What is its average speed in km/h?"}
+{"question": "What is 75% of 162?"}
+{"question": "Solve for x: 10x - 10 = 130"}
+{"question": "A rectangle has a length of 26 cm and a width of 8 cm. What is its area in square cm?"}
+{"question": "Solve for x: 3x - 13 = 44"}
+{"question": "Calculate 17 + 25 × 12."}
+{"question": "Calculate 58 × 44."}
+{"question": "Calculate 78 × 41."}
+{"question": "What is 30% of 172?"}
+{"question": "Two numbers are in the ratio 2:3. If their sum is 85, what is the larger number?"}
+{"question": "Solve for x: 8x - 3 = 13"}
+{"question": "What is 5% of 97?"}
+{"question": "Solve for x: 5x - 14 = 46"}
+{"question": "Two numbers are in the ratio 7:3. If their sum is 170, what is the larger number?"}
+{"question": "What is 381 + 350?"}
+{"question": "Two numbers are in the ratio 7:8. If their sum is 255, what is the larger number?"}
+{"question": "What is 60% of 117?"}
+{"question": "Solve for x: 7x + 12 = 103"}
+{"question": "What is 195 + 323?"}
+{"question": "Calculate 57 × 55."}
+{"question": "What is 75% of 292?"}
+{"question": "What is 80% of 203?"}
+{"question": "A car travels 115 km in 10 hours. What is its average speed in km/h?"}
+{"question": "What is 50% of 211?"}
+{"question": "Solve for x: 5x - 4 = 71"}
+{"question": "Calculate 97 × 92."}
+{"question": "If one apple costs $6.17, how much do 7 apples cost?"}
+{"question": "A car travels 298 km in 2 hours. What is its average speed in km/h?"}
+{"question": "What is 90% of 77?"}
+{"question": "What is 7/3 of 79?"}
+{"question": "Solve for x: 5x - 6 = -1"}
+{"question": "John is 15 years old now. How old was he 12 years ago?"}
+{"question": "If one apple costs $3.84, how much do 4 apples cost?"}
+{"question": "A car travels 262 km in 2 hours. What is its average speed in km/h?"}
+{"question": "A car travels 119 km in 9 hours. What is its average speed in km/h?"}
+{"question": "If one apple costs $9.61, how much do 11 apples cost?"}
+{"question": "A car travels 299 km in 5 hours. What is its average speed in km/h?"}
+{"question": "Calculate 38 + 43 × 19."}
+{"question": "Solve for x: 5x + 12 = 57"}
+{"question": "Two numbers are in the ratio 2:6. If their sum is 152, what is the larger number?"}
+{"question": "John is 47 years old now. How old was he 16 years ago?"}
+{"question": "What is 754 + 214?"}
+{"question": "What is 5% of 346?"}
+{"question": "What is 476 ÷ 14?"}
+{"question": "Solve for x: 6x - 8 = 46"}
+{"question": "What is 809 - 235?"}
+{"question": "What is 792 + 858?"}
+{"question": "What is 20% of 135?"}
+{"question": "Calculate 50 + 42 × 11."}
+{"question": "A rectangle has a length of 7 cm and a width of 29 cm. What is its area in square cm?"}
+{"question": "If one apple costs $2.98, how much do 9 apples cost?"}
+{"question": "A car travels 82 km in 8 hours. What is its average speed in km/h?"}
+{"question": "A rectangle has a length of 28 cm and a width of 27 cm. What is its area in square cm?"}
+{"question": "What is 15% of 85?"}
+{"question": "Solve for x: 6x - 17 = 1"}
+{"question": "Two numbers are in the ratio 2:7. If their sum is 81, what is the larger number?"}
+{"question": "What is 10% of 177?"}
+{"question": "Calculate 56 × 30."}
+{"question": "What is 818 + 658?"}
+{"question": "Solve for x: 8x - 3 = 85"}
+{"question": "What is 60% of 388?"}
+{"question": "What is 90% of 299?"}
+{"question": "What is 1/8 of 67?"}
+{"question": "Solve for x: 2x - 10 = 10"}
+{"question": "What is 10% of 276?"}
+{"question": "If one apple costs $8.64, how much do 7 apples cost?"}
+{"question": "Solve for x: 10x + 7 = 187"}
+{"question": "A car travels 249 km in 7 hours. What is its average speed in km/h?"}
+{"question": "What is 80% of 491?"}
+{"question": "Two numbers are in the ratio 7:6. If their sum is 130, what is the larger number?"}
+{"question": "What is 10/5 of 76?"}
+{"question": "What is 5% of 349?"}
+{"question": "A car travels 392 km in 8 hours. What is its average speed in km/h?"}
+{"question": "Solve for x: 7x - 11 = 115"}
+{"question": "A rectangle has a length of 13 cm and a width of 17 cm. What is its area in square cm?"}
+{"question": "Calculate 10 + 26 × 10."}
+{"question": "What is 75% of 84?"}
+{"question": "Solve for x: 8x - 18 = 102"}
+{"question": "Calculate 47 × 20."}
+{"question": "Calculate 44 + 43 × 5."}
+{"question": "Solve for x: 7x - 15 = 90"}
+{"question": "What is 10% of 66?"}
+{"question": "Calculate 23 + 44 × 11."}
+{"question": "What is 4/3 of 81?"}
+{"question": "A rectangle has a length of 17 cm and a width of 13 cm. What is its area in square cm?"}
+{"question": "Solve for x: 10x + 1 = 11"}
+{"question": "A rectangle has a length of 20 cm and a width of 5 cm. What is its area in square cm?"}
+{"question": "Solve for x: 4x - 16 = 44"}
+{"question": "Solve for x: 5x - 13 = 67"}
+{"question": "A rectangle has a length of 9 cm and a width of 12 cm. What is its area in square cm?"}
+{"question": "What is 25% of 451?"}
+{"question": "What is 795 - 198?"}
+{"question": "Solve for x: 4x + 14 = 22"}
+{"question": "A rectangle has a length of 19 cm and a width of 27 cm. What is its area in square cm?"}
+{"question": "Solve for x: 3x - 16 = 38"}
+{"question": "What is 8/9 of 53?"}
+{"question": "John is 17 years old now. How old was he 11 years ago?"}
+{"question": "John is 30 years old now. How old was he 8 years ago?"}
+{"question": "What is 7/9 of 19?"}
+{"question": "A rectangle has a length of 10 cm and a width of 14 cm. What is its area in square cm?"}
+{"question": "What is 1739 ÷ 37?"}
+{"question": "John is 28 years old now. How old was he 12 years ago?"}
+{"question": "What is 658 + 189?"}
+{"question": "Solve for x: 9x + 19 = 190"}
+{"question": "A car travels 258 km in 7 hours. What is its average speed in km/h?"}
+{"question": "What is 50% of 307?"}
+{"question": "What is 5% of 310?"}
+{"question": "A car travels 230 km in 6 hours. What is its average speed in km/h?"}
+{"question": "A car travels 353 km in 2 hours. What is its average speed in km/h?"}
+{"question": "What is 9/3 of 30?"}
+{"question": "What is 40% of 406?"}
+{"question": "John is 44 years old now. How old was he 9 years ago?"}
+{"question": "John is 16 years old now. How old was he 11 years ago?"}
+{"question": "Calculate 40 + 45 × 10."}
+{"question": "John is 13 years old now. How old was he 14 years ago?"}
+{"question": "A rectangle has a length of 29 cm and a width of 18 cm. What is its area in square cm?"}
+{"question": "What is 933 - 276?"}
+{"question": "Calculate 17 × 39."}
+{"question": "What is 80% of 384?"}
+{"question": "A rectangle has a length of 24 cm and a width of 24 cm. What is its area in square cm?"}
+{"question": "Solve for x: 9x - 2 = 160"}
+{"question": "Calculate 91 × 98."}
+{"question": "What is 60% of 279?"}
+{"question": "What is 90% of 451?"}
+{"question": "A rectangle has a length of 15 cm and a width of 29 cm. What is its area in square cm?"}
+{"question": "Solve for x: 7x + 17 = 143"}
+{"question": "John is 24 years old now. How old was he 17 years ago?"}
+{"question": "What is 90% of 327?"}
+{"question": "What is 323 ÷ 17?"}
+{"question": "A rectangle has a length of 25 cm and a width of 6 cm. What is its area in square cm?"}
+{"question": "A car travels 435 km in 8 hours. What is its average speed in km/h?"}
+{"question": "If one apple costs $8.48, how much do 6 apples cost?"}
+{"question": "Solve for x: 6x + 12 = 108"}
+{"question": "Solve for x: 6x - 8 = 34"}
+{"question": "Calculate 29 + 25 × 6."}
+{"question": "Solve for x: 6x - 17 = 103"}
+{"question": "What is 4/12 of 29?"}
+{"question": "What is 60% of 211?"}
+{"question": "Two numbers are in the ratio 5:8. If their sum is 117, what is the larger number?"}
+{"question": "Solve for x: 4x - 5 = 19"}
+{"question": "John is 43 years old now. How old was he 11 years ago?"}
+{"question": "Solve for x: 6x - 8 = 46"}
+{"question": "John is 44 years old now. How old was he 10 years ago?"}
+{"question": "What is 15% of 244?"}
+{"question": "A car travels 411 km in 5 hours. What is its average speed in km/h?"}
+{"question": "Solve for x: 4x + 6 = 10"}
+{"question": "Two numbers are in the ratio 3:5. If their sum is 104, what is the larger number?"}
+{"question": "Two numbers are in the ratio 6:4. If their sum is 140, what is the larger number?"}
+{"question": "What is 4/12 of 37?"}
+{"question": "A car travels 420 km in 4 hours. What is its average speed in km/h?"}
+{"question": "Solve for x: 5x - 16 = 84"}
+{"question": "Two numbers are in the ratio 7:2. If their sum is 135, what is the larger number?"}
+{"question": "What is 716 - 274?"}
+{"question": "John is 37 years old now. How old was he 15 years ago?"}
+{"question": "Two numbers are in the ratio 3:3. If their sum is 42, what is the larger number?"}
+{"question": "Two numbers are in the ratio 5:6. If their sum is 99, what is the larger number?"}
+{"question": "A rectangle has a length of 28 cm and a width of 22 cm. What is its area in square cm?"}
+{"question": "What is 25% of 252?"}
+{"question": "What is 616 - 495?"}
+{"question": "Calculate 26 + 43 × 18."}
+{"question": "What is 450 ÷ 18?"}
+{"question": "If one apple costs $8.27, how much do 12 apples cost?"}
+{"question": "Solve for x: 10x - 5 = 65"}
+{"question": "What is 60% of 171?"}
+{"question": "Calculate 10 + 17 × 13."}
+{"question": "What is 672 - 152?"}
+{"question": "Two numbers are in the ratio 6:8. If their sum is 238, what is the larger number?"}
+{"question": "What is 7/11 of 86?"}
+{"question": "Two numbers are in the ratio 3:7. If their sum is 70, what is the larger number?"}
+{"question": "What is 50% of 463?"}
+{"question": "Solve for x: 9x - 6 = 57"}
+{"question": "Calculate 19 + 33 × 10."}
+{"question": "If one apple costs $4.83, how much do 9 apples cost?"}
+{"question": "Two numbers are in the ratio 6:4. If their sum is 180, what is the larger number?"}
+{"question": "A car travels 155 km in 8 hours. What is its average speed in km/h?"}
+{"question": "Two numbers are in the ratio 8:3. If their sum is 209, what is the larger number?"}
+{"question": "John is 36 years old now. How old was he 20 years ago?"}
+{"question": "A car travels 488 km in 8 hours. What is its average speed in km/h?"}
+{"question": "Solve for x: 8x - 20 = 116"}
+{"question": "Solve for x: 5x + 3 = 53"}
+{"question": "A rectangle has a length of 23 cm and a width of 11 cm. What is its area in square cm?"}
+{"question": "Solve for x: 6x - 10 = 80"}
+{"question": "Solve for x: 8x - 1 = 135"}
+{"question": "A car travels 91 km in 4 hours. What is its average speed in km/h?"}
+{"question": "What is 10/6 of 20?"}
+{"question": "Two numbers are in the ratio 8:7. If their sum is 255, what is the larger number?"}
+{"question": "What is 913 - 122?"}
+{"question": "What is 10% of 54?"}
+{"question": "If one apple costs $8.01, how much do 11 apples cost?"}
+{"question": "If one apple costs $6.29, how much do 10 apples cost?"}
+{"question": "Solve for x: 8x - 12 = 76"}
+{"question": "John is 18 years old now. How old was he 20 years ago?"}
+{"question": "What is 15% of 147?"}
+{"question": "What is 3/5 of 32?"}
+{"question": "What is 20% of 346?"}
+{"question": "What is 50% of 159?"}
+{"question": "A rectangle has a length of 19 cm and a width of 15 cm. What is its area in square cm?"}
+{"question": "What is 540 - 382?"}
+{"question": "Two numbers are in the ratio 6:5. If their sum is 176, what is the larger number?"}
+{"question": "What is 20% of 256?"}
+{"question": "Calculate 39 × 22."}
+{"question": "What is 860 - 135?"}
+{"question": "What is 5/11 of 89?"}
+{"question": "Solve for x: 10x - 20 = 90"}
+{"question": "A rectangle has a length of 5 cm and a width of 14 cm. What is its area in square cm?"}
+{"question": "Solve for x: 3x - 4 = 14"}
+{"question": "Solve for x: 10x + 6 = 206"}
+{"question": "Solve for x: 8x - 8 = 32"}
+{"question": "Two numbers are in the ratio 7:4. If their sum is 55, what is the larger number?"}
+{"question": "What is 529 + 325?"}
+{"question": "Solve for x: 5x - 14 = 81"}
+{"question": "John is 16 years old now. How old was he 5 years ago?"}
+{"question": "A car travels 327 km in 9 hours. What is its average speed in km/h?"}
+{"question": "What is 642 - 179?"}
+{"question": "What is 10/12 of 97?"}
+{"question": "Solve for x: 6x - 15 = 3"}
+{"question": "Solve for x: 8x - 13 = 35"}
+{"question": "What is 1/11 of 22?"}
+{"question": "A car travels 246 km in 4 hours. What is its average speed in km/h?"}
+{"question": "John is 32 years old now. How old was he 19 years ago?"}
+{"question": "Solve for x: 7x - 13 = 57"}
+{"question": "Solve for x: 3x - 15 = 27"}
+{"question": "What is 1/5 of 46?"}
+{"question": "Two numbers are in the ratio 3:8. If their sum is 198, what is the larger number?"}
+{"question": "A car travels 249 km in 2 hours. What is its average speed in km/h?"}
+{"question": "Solve for x: 6x - 16 = 38"}
+{"question": "If one apple costs $2.36, how much do 6 apples cost?"}
+{"question": "What is 549 - 283?"}
+{"question": "What is 5/4 of 19?"}
+{"question": "A rectangle has a length of 12 cm and a width of 11 cm. What is its area in square cm?"}
+{"question": "What is 132 + 130?"}
+{"question": "What is 10% of 341?"}
+{"question": "What is 40% of 289?"}
+{"question": "If one apple costs $3.75, how much do 12 apples cost?"}
+{"question": "What is 1/4 of 49?"}
+{"question": "Two numbers are in the ratio 7:7. If their sum is 196, what is the larger number?"}
+{"question": "What is 833 + 765?"}
+{"question": "Calculate 97 × 51."}
+{"question": "Two numbers are in the ratio 5:2. If their sum is 56, what is the larger number?"}
+{"question": "Two numbers are in the ratio 6:8. If their sum is 224, what is the larger number?"}
+{"question": "John is 40 years old now. How old was he 16 years ago?"}
+{"question": "What is 1980 ÷ 45?"}
+{"question": "What is 1000 ÷ 50?"}
+{"question": "John is 38 years old now. How old was he 5 years ago?"}
+{"question": "What is 125 + 859?"}
+{"question": "If one apple costs $8.41, how much do 9 apples cost?"}
+{"question": "What is 1776 ÷ 37?"}
+{"question": "What is 75% of 91?"}
+{"question": "Two numbers are in the ratio 8:7. If their sum is 255, what is the larger number?"}
+{"question": "What is 25% of 392?"}
+{"question": "What is 10/6 of 70?"}
+{"question": "What is 5% of 167?"}
+{"question": "A car travels 480 km in 9 hours. What is its average speed in km/h?"}
+{"question": "What is 816 - 285?"}
+{"question": "What is 90% of 373?"}
+{"question": "A car travels 143 km in 2 hours. What is its average speed in km/h?"}
+{"question": "What is 494 ÷ 19?"}
+{"question": "What is 80% of 100?"}
+{"question": "What is 75% of 339?"}
+{"question": "What is 547 - 294?"}
+{"question": "What is 338 + 617?"}
+{"question": "A rectangle has a length of 5 cm and a width of 24 cm. What is its area in square cm?"}
+{"question": "If one apple costs $2.08, how much do 8 apples cost?"}
+{"question": "If one apple costs $1.61, how much do 8 apples cost?"}
+{"question": "What is 30% of 86?"}
+{"question": "Two numbers are in the ratio 8:2. If their sum is 130, what is the larger number?"}
+{"question": "John is 26 years old now. How old was he 12 years ago?"}
+{"question": "What is 943 ÷ 23?"}
+{"question": "Calculate 29 + 35 × 16."}
+{"question": "What is 40% of 80?"}
+{"question": "Two numbers are in the ratio 8:8. If their sum is 288, what is the larger number?"}
+{"question": "What is 774 - 163?"}
+{"question": "Solve for x: 4x + 2 = 14"}
+{"question": "Two numbers are in the ratio 2:5. If their sum is 112, what is the larger number?"}
+{"question": "A car travels 189 km in 8 hours. What is its average speed in km/h?"}
+{"question": "Two numbers are in the ratio 5:4. If their sum is 45, what is the larger number?"}
+{"question": "John is 40 years old now. How old was he 20 years ago?"}
+{"question": "Solve for x: 4x + 8 = 80"}
+{"question": "John is 22 years old now. How old was he 11 years ago?"}
+{"question": "Two numbers are in the ratio 7:4. If their sum is 220, what is the larger number?"}
+{"question": "Solve for x: 7x - 4 = 66"}
+{"question": "What is 50% of 159?"}
+{"question": "John is 27 years old now. How old was he 14 years ago?"}
+{"question": "What is 559 + 703?"}
+{"question": "What is 5% of 249?"}
+{"question": "Solve for x: 4x + 1 = 57"}
+{"question": "A rectangle has a length of 8 cm and a width of 29 cm. What is its area in square cm?"}
+{"question": "Solve for x: 4x - 15 = 53"}
+{"question": "Calculate 91 × 31."}
+{"question": "If one apple costs $6.67, how much do 7 apples cost?"}
+{"question": "Two numbers are in the ratio 5:3. If their sum is 112, what is the larger number?"}
+{"question": "What is 1170 ÷ 26?"}
+{"question": "A rectangle has a length of 12 cm and a width of 25 cm. What is its area in square cm?"}
+{"question": "Solve for x: 5x + 5 = 60"}
+{"question": "Two numbers are in the ratio 8:6. If their sum is 84, what is the larger number?"}
+{"question": "John is 15 years old now. How old was he 14 years ago?"}
+{"question": "If one apple costs $4.33, how much do 9 apples cost?"}
+{"question": "Solve for x: 3x - 14 = 40"}
+{"question": "Add the fractions: 2/6 + 3/6"}
+{"question": "Solve for x: 2x - 13 = -7"}
+{"question": "What is 1155 ÷ 35?"}
+{"question": "A car travels 325 km in 10 hours. What is its average speed in km/h?"}
+{"question": "What is 30% of 266?"}
+{"question": "Two numbers are in the ratio 7:4. If their sum is 209, what is the larger number?"}
+{"question": "John is 27 years old now. How old was he 6 years ago?"}
+{"question": "Solve for x: 9x - 20 = 133"}
+{"question": "What is 30% of 79?"}
+{"question": "What is 877 + 925?"}
+{"question": "What is 610 - 490?"}
+{"question": "What is 1722 ÷ 42?"}
+{"question": "Calculate 61 × 44."}
+{"question": "Solve for x: 5x - 3 = 27"}
+{"question": "If one apple costs $7.44, how much do 10 apples cost?"}
+{"question": "What is 5% of 432?"}
+{"question": "John is 25 years old now. How old was he 14 years ago?"}
+{"question": "Solve for x: 9x - 6 = 21"}
+{"question": "If one apple costs $8.07, how much do 12 apples cost?"}
+{"question": "What is 998 - 293?"}
+{"question": "If one apple costs $6.84, how much do 8 apples cost?"}
+{"question": "What is 90% of 342?"}
+{"question": "A rectangle has a length of 16 cm and a width of 10 cm. What is its area in square cm?"}
+{"question": "Two numbers are in the ratio 8:2. If their sum is 140, what is the larger number?"}
+{"question": "A car travels 92 km in 8 hours. What is its average speed in km/h?"}
+{"question": "Two numbers are in the ratio 3:7. If their sum is 110, what is the larger number?"}
+{"question": "What is 674 + 303?"}
+{"question": "Solve for x: 4x - 1 = 7"}
+{"question": "What is 80% of 270?"}
+{"question": "Two numbers are in the ratio 4:8. If their sum is 156, what is the larger number?"}
+{"question": "Calculate 81 × 38."}
+{"question": "Solve for x: 4x - 3 = 37"}
+{"question": "If one apple costs $5.98, how much do 8 apples cost?"}
+{"question": "Solve for x: 2x + 1 = 11"}
+{"question": "A rectangle has a length of 6 cm and a width of 16 cm. What is its area in square cm?"}
+{"question": "What is 60% of 100?"}
+{"question": "Two numbers are in the ratio 6:2. If their sum is 96, what is the larger number?"}
+{"question": "What is 8/3 of 18?"}
+{"question": "If one apple costs $8.65, how much do 10 apples cost?"}
+{"question": "Solve for x: 3x - 12 = 15"}
+{"question": "Solve for x: 6x - 13 = 95"}
+{"question": "What is 1365 ÷ 35?"}
+{"question": "A car travels 486 km in 8 hours. What is its average speed in km/h?"}
+{"question": "What is 5% of 383?"}
+{"question": "What is 704 + 532?"}
+{"question": "Solve for x: 2x - 1 = 23"}
+{"question": "What is 10/12 of 35?"}
+{"question": "Two numbers are in the ratio 3:3. If their sum is 108, what is the larger number?"}
+{"question": "Two numbers are in the ratio 4:7. If their sum is 220, what is the larger number?"}
+{"question": "A car travels 63 km in 8 hours. What is its average speed in km/h?"}
+{"question": "Two numbers are in the ratio 2:5. If their sum is 91, what is the larger number?"}
+{"question": "Solve for x: 2x + 2 = 16"}
+{"question": "If one apple costs $5.60, how much do 5 apples cost?"}
+{"question": "John is 47 years old now. How old was he 14 years ago?"}
+{"question": "If one apple costs $8.20, how much do 8 apples cost?"}
+{"question": "What is 20% of 451?"}
+{"question": "Two numbers are in the ratio 6:7. If their sum is 260, what is the larger number?"}
+{"question": "What is 195 ÷ 15?"}
+{"question": "What is 523 - 438?"}
+{"question": "Solve for x: 7x - 3 = 53"}
+{"question": "Calculate 14 × 50."}
+{"question": "Add the fractions: 3/5 + 4/5"}
+{"question": "What is 80% of 416?"}
+{"question": "Two numbers are in the ratio 2:2. If their sum is 60, what is the larger number?"}
+{"question": "Two numbers are in the ratio 4:4. If their sum is 144, what is the larger number?"}
+{"question": "Two numbers are in the ratio 3:5. If their sum is 72, what is the larger number?"}
+{"question": "Solve for x: 2x - 4 = 24"}
+{"question": "Two numbers are in the ratio 5:4. If their sum is 99, what is the larger number?"}
+{"question": "What is 15% of 192?"}
+{"question": "Calculate 42 + 16 × 14."}
+{"question": "Two numbers are in the ratio 2:4. If their sum is 120, what is the larger number?"}
+{"question": "What is 40% of 298?"}
+{"question": "Solve for x: 10x - 16 = 64"}
+{"question": "A car travels 294 km in 2 hours. What is its average speed in km/h?"}
+{"question": "Solve for x: 2x + 15 = 35"}
+{"question": "A car travels 459 km in 5 hours. What is its average speed in km/h?"}
+{"question": "What is 5/9 of 19?"}
+{"question": "Two numbers are in the ratio 6:7. If their sum is 130, what is the larger number?"}
+{"question": "What is 60% of 167?"}
+{"question": "Calculate 11 + 17 × 16."}
+{"question": "Solve for x: 9x + 2 = 92"}
+{"question": "What is 3/2 of 42?"}
+{"question": "What is 75% of 70?"}
+{"question": "What is 25% of 161?"}
+{"question": "Calculate 36 × 95."}
+{"question": "What is 1222 ÷ 26?"}
+{"question": "John is 29 years old now. How old was he 5 years ago?"}
+{"question": "Solve for x: 6x + 19 = 121"}
+{"question": "A rectangle has a length of 13 cm and a width of 7 cm. What is its area in square cm?"}
+{"question": "What is 384 + 928?"}
+{"question": "Solve for x: 10x - 7 = 113"}
+{"question": "What is 4/6 of 90?"}
+{"question": "What is 60% of 130?"}
+{"question": "What is 581 - 457?"}
+{"question": "If one apple costs $5.14, how much do 4 apples cost?"}
+{"question": "Two numbers are in the ratio 8:4. If their sum is 132, what is the larger number?"}
+{"question": "Calculate 19 × 87."}
+{"question": "If one apple costs $2.14, how much do 6 apples cost?"}
+{"question": "What is 432 ÷ 24?"}
+{"question": "Two numbers are in the ratio 6:6. If their sum is 180, what is the larger number?"}
+{"question": "If one apple costs $7.39, how much do 12 apples cost?"}
+{"question": "If one apple costs $5.16, how much do 10 apples cost?"}
+{"question": "What is 5/11 of 64?"}
+{"question": "John is 40 years old now. How old was he 13 years ago?"}
+{"question": "What is 1/4 of 29?"}
+{"question": "If one apple costs $3.85, how much do 8 apples cost?"}
+{"question": "What is 20% of 147?"}
+{"question": "A rectangle has a length of 8 cm and a width of 23 cm. What is its area in square cm?"}
