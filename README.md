@@ -453,10 +453,4 @@ Core packages:
 
 See `requirements.txt` for complete list.
 
-## Citation
 
-This implementation is based on chain-of-thought prompting and knowledge distillation techniques. If using this code for research, cite relevant papers on CoT reasoning and parameter-efficient fine-tuning.
-
-## License
-
-This project is for research and educational purposes. Model licenses (Qwen) apply to downloaded models.
