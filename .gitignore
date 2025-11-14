@@ -34,3 +34,14 @@ ENV/
 *.safetensors
 *.pt
 *.pth
+
+/results/
+/models/teacher/
+/models/student/
+/__pycache__/
+/*.log
+*.pt
+*.bin
+*.safetensors
+.env
+
