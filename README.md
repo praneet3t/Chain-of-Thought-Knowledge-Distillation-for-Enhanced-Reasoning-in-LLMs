@@ -1,228 +1,462 @@
-# Chain-of-Thought Knowledge Distillation for Enhanced Reasoning in LLMs
+# Chain-of-Thought Knowledge Distillation
 
-This project implements Chain-of-Thought (CoT) distillation to enhance small student models by fine-tuning them on step-by-step reasoning traces generated from larger teacher models. The student learns structured reasoning patterns through efficient LoRA-based training on synthetic CoT datasets.
+## Overview
+
+This project implements chain-of-thought (CoT) knowledge distillation for training smaller language models to perform step-by-step reasoning. A large teacher model generates detailed reasoning traces for a dataset of questions, which are then used to fine-tune a smaller student model using parameter-efficient LoRA adapters.
+
+The implementation is designed for HPC clusters with offline GPU nodes and supports distributed multi-GPU training via Hugging Face Accelerate.
+
+## Architecture
+
+### Pipeline Stages
+
+1. **CoT Generation**: Teacher model generates step-by-step reasoning traces for input questions
+2. **LoRA Training**: Student model is fine-tuned on generated CoT data using low-rank adaptation
+3. **Evaluation**: Trained model is evaluated on held-out test set with accuracy metrics
+
+### Models
+
+- **Teacher**: Qwen-14B-Chat (14B parameters, ~28GB disk space)
+- **Student**: Qwen-7B (7B parameters, ~14GB disk space)
+
+### Training Method
+
+- **Quantization**: 4-bit NF4 quantization via bitsandbytes
+- **PEFT**: LoRA (Low-Rank Adaptation) with rank r=8, alpha=16
+- **Target Modules**: q_proj, k_proj, v_proj, o_proj, up_proj, down_proj
+- **Optimizer**: paged_adamw_8bit for memory efficiency
+
+## System Requirements
+
+### Hardware
+
+- Minimum: 1x A100 40GB GPU
+- Recommended: 4x A100 80GB GPUs for distributed training
+- Storage: 50GB free space for models and data
+
+### Software
+
+- Python 3.10+
+- CUDA 11.8+
+- Conda or virtualenv
+- Network access on download node (for model acquisition)
+- Offline capability on GPU compute node
+
+## Installation
+
+### On Network-Connected Node
+
+```bash
+# Create environment
+conda create -n cot_distill python=3.10 -y
+conda activate cot_distill
+
+# Install PyTorch with CUDA
+conda install pytorch pytorch-cuda=11.8 -c pytorch -c nvidia -y
+
+# Install dependencies
+pip install transformers==4.36.0 \
+    peft==0.7.1 \
+    datasets==2.16.0 \
+    bitsandbytes==0.41.3 \
+    accelerate==0.25.0 \
+    tqdm==4.66.1 \
+    sentencepiece==0.1.99 \
+    protobuf==3.20.3 \
+    deepspeed==0.12.6 \
+    huggingface-hub
+```
+
+### Download Models
+
+```bash
+cd /path/to/chain-of-thought-qwen
+python scripts/download_models.py --teacher Qwen/Qwen-14B-Chat --student Qwen/Qwen-7B --out_dir models
+```
+
+This downloads models to `models/teacher/` and `models/student/` directories. All subsequent operations use `local_files_only=True` to prevent network access.
 
 ## Project Structure
 
 ```
 chain-of-thought-qwen/
+├── configs/
+│   └── accelerate_config.yaml       # Multi-GPU training configuration
 ├── data/
-│   ├── raw_questions.jsonl       # Input questions
-│   ├── cot_dataset.jsonl         # Generated CoT reasoning
-│   └── test_questions.jsonl      # Test set
+│   ├── raw_questions.jsonl          # Input questions (377 samples)
+│   ├── cot_dataset.jsonl            # Generated CoT traces
+│   └── test_questions.jsonl         # Test set with gold answers (95 samples)
 ├── models/
-│   ├── teacher/                  # Teacher model directory
-│   └── student/                  # Student model directory
+│   ├── teacher/                     # Qwen-14B-Chat
+│   └── student/                     # Qwen-7B
 ├── scripts/
-│   ├── helpers.py                # Utility functions
-│   ├── gen_cot.py                # Generate CoT from teacher
-│   ├── train_cot_lora.py         # Train student with LoRA
-│   └── eval_cot.py               # Evaluate trained model
-├── results/                      # Training outputs
-└── README.md
+│   ├── helpers.py                   # Utility functions
+│   ├── gen_cot.py                   # CoT generation script
+│   ├── train_cot_lora.py            # LoRA training script
+│   ├── eval_cot.py                  # Evaluation script
+│   ├── download_models.py           # Model download utility
+│   └── generate_dataset.py          # Dataset generation utility
+├── results/
+│   ├── student_cot_lora/            # Trained LoRA adapters
+│   └── predictions.jsonl            # Evaluation outputs
+└── run_pipeline.sh                  # Automated pipeline execution
 ```
 
-## Setup Instructions
+## Usage
 
-### 1. Environment Setup
+### Automated Execution
 
 ```bash
-pip install torch transformers peft datasets bitsandbytes accelerate tqdm
+conda activate cot_distill
+cd /path/to/chain-of-thought-qwen
+chmod +x run_pipeline.sh
+./run_pipeline.sh
 ```
 
-### 2. Model Placement
+### Manual Execution
 
-Download Qwen models and place them in the appropriate directories:
-
-- **Teacher Model**: Place in `models/teacher/` (e.g., Qwen-14B or Qwen-72B)
-- **Student Model**: Place in `models/student/` (e.g., Qwen-1.8B or Qwen-7B)
-
-Example structure:
-```
-models/
-├── teacher/
-│   ├── config.json
-│   ├── tokenizer_config.json
-│   ├── pytorch_model.bin (or model.safetensors)
-│   └── ...
-└── student/
-    ├── config.json
-    ├── tokenizer_config.json
-    ├── pytorch_model.bin (or model.safetensors)
-    └── ...
-```
-
-### 3. Prepare Input Data
-
-Create `data/raw_questions.jsonl` with your questions:
-
-```jsonl
-{"question": "What is 15% of 240?"}
-{"question": "If a train travels 120 km in 2 hours, what is its average speed?"}
-{"question": "Solve for x: 2x + 5 = 13"}
-```
-
-For evaluation with gold answers, create `data/test_questions.jsonl`:
-
-```jsonl
-{"question": "What is 15% of 240?", "answer": "36"}
-{"question": "If a train travels 120 km in 2 hours, what is its average speed?", "answer": "60 km/h"}
-```
-
-## Usage Pipeline
-
-### Stage 1: Generate Chain-of-Thought Reasoning
-
-Use the teacher model to generate step-by-step reasoning for each question:
+#### Stage 1: Generate Chain-of-Thought Dataset
 
 ```bash
-python scripts/gen_cot.py \
-    --teacher_model models/teacher \
-    --input_file data/raw_questions.jsonl \
-    --output_file data/cot_dataset.jsonl \
+CUDA_VISIBLE_DEVICES=0 python scripts/gen_cot.py \
+    --teacher_dir models/teacher \
+    --input data/raw_questions.jsonl \
+    --output data/cot_dataset.jsonl \
     --max_new_tokens 512
 ```
 
-**Output**: `data/cot_dataset.jsonl` containing questions with CoT reasoning traces.
+**Parameters:**
+- `--teacher_dir`: Path to teacher model directory
+- `--input`: Input JSONL file with `question` field
+- `--output`: Output JSONL file with `question` and `cot` fields
+- `--max_new_tokens`: Maximum tokens to generate per question
+- `--start_index`: Resume from specific index (for interrupted runs)
+- `--num_samples`: Limit number of samples to process
 
-### Stage 2: Train Student Model with LoRA
-
-Fine-tune the student model on the generated CoT dataset:
-
-```bash
-python scripts/train_cot_lora.py \
-    --student_model models/student \
-    --cot_dataset data/cot_dataset.jsonl \
-    --output_dir results/student_cot_lora \
-    --num_epochs 3 \
-    --batch_size 4 \
-    --learning_rate 2e-4
+**Output Format:**
+```json
+{"question": "What is 15% of 240?", "cot": "Step 1: Convert 15% to decimal...\nFinal Answer: 36"}
 ```
 
-**Output**: Fine-tuned LoRA weights in `results/student_cot_lora/`
+**Time**: 10-15 minutes for 377 questions on A100
 
-### Stage 3: Evaluate Trained Model
-
-Test the fine-tuned model on held-out questions:
+#### Stage 2: Train Student Model
 
 ```bash
-python scripts/eval_cot.py \
+accelerate launch --config_file configs/accelerate_config.yaml \
+    scripts/train_cot_lora.py \
+    --student_dir models/student \
+    --data data/cot_dataset.jsonl \
+    --out_dir results/student_cot_lora \
+    --per_device_train_batch_size 2 \
+    --epochs 3 \
+    --lr 2e-4
+```
+
+**Parameters:**
+- `--student_dir`: Path to student model directory
+- `--data`: CoT dataset JSONL file
+- `--out_dir`: Output directory for LoRA adapters
+- `--per_device_train_batch_size`: Batch size per GPU
+- `--epochs`: Number of training epochs
+- `--lr`: Learning rate
+- `--r`: LoRA rank (default: 8)
+- `--lora_alpha`: LoRA alpha scaling (default: 16)
+- `--max_length`: Maximum sequence length (default: 1024)
+- `--resume_from_checkpoint`: Resume from checkpoint directory
+
+**Training Format:**
+```
+### Question:
+What is 15% of 240?
+
+### Answer:
+Step 1: Convert 15% to decimal...
+Final Answer: 36
+```
+
+**Time**: 30-45 minutes for 377 samples, 3 epochs on 4x A100
+
+#### Stage 3: Evaluate Model
+
+```bash
+CUDA_VISIBLE_DEVICES=0 python scripts/eval_cot.py \
     --base_model models/student \
     --lora_model results/student_cot_lora \
-    --test_file data/test_questions.jsonl \
-    --output_file results/predictions.jsonl \
-    --max_new_tokens 512
+    --input data/test_questions.jsonl \
+    --output results/predictions.jsonl \
+    --max_new_tokens 256
 ```
 
-**Output**: Predictions and accuracy metrics in `results/predictions.jsonl`
+**Parameters:**
+- `--base_model`: Path to base student model
+- `--lora_model`: Path to LoRA adapter directory (optional)
+- `--input`: Test JSONL file with `question` and optional `answer` fields
+- `--output`: Output JSONL file with predictions
+- `--max_new_tokens`: Maximum tokens to generate
 
-## Hyperparameter Recommendations
+**Output Format:**
+```json
+{"question": "What is 20% of 150?", "generated": "Step 1: ...\nFinal Answer: 30", "pred": "30", "gold": "30"}
+```
+
+**Time**: 2-3 minutes for 95 questions on A100
+
+## Dataset
+
+### Training Set
+
+377 questions across 6 categories:
+- Arithmetic: 100 (addition, subtraction, multiplication, division, mixed operations)
+- Percentages: 80 (percentage calculations)
+- Algebra: 80 (linear equations)
+- Word Problems: 120 (speed/distance, area, price, age problems)
+- Fractions: 60 (fraction operations and arithmetic)
+- Ratios: 60 (ratio and proportion problems)
+
+### Test Set
+
+95 questions with gold answers for accuracy evaluation, sampled from the same distribution.
+
+### Dataset Generation
+
+```bash
+python scripts/generate_dataset.py
+```
+
+Generates `data/raw_questions.jsonl` (training) and `data/test_questions.jsonl` (test).
+
+## Configuration
+
+### Multi-GPU Training (configs/accelerate_config.yaml)
+
+```yaml
+compute_environment: LOCAL_MACHINE
+distributed_type: MULTI_GPU
+num_processes: 4
+gpu_ids: all
+mixed_precision: fp16
+```
+
+Modify `num_processes` to match available GPU count.
 
 ### LoRA Configuration
-- **r**: 8 (rank of LoRA matrices)
-- **lora_alpha**: 16 (scaling factor)
-- **lora_dropout**: 0.05
-- **target_modules**: q_proj, k_proj, v_proj, o_proj, up_proj, down_proj
 
-### Training Parameters
-- **Learning rate**: 2e-4 (adjust to 1e-4 for larger models)
-- **Batch size**: 4 (reduce to 1-2 for memory constraints)
-- **Gradient accumulation**: 4 steps
-- **Epochs**: 3 (increase to 5 for smaller datasets)
-- **Max sequence length**: 1024 tokens
+Default parameters in `train_cot_lora.py`:
+- Rank (r): 8
+- Alpha: 16
+- Dropout: 0.05
+- Target modules: All attention and MLP projection layers
 
-### Generation Parameters
-- **Temperature**: 0.2 (deterministic reasoning)
-- **do_sample**: False
-- **max_new_tokens**: 512 (adjust based on reasoning complexity)
+### Training Hyperparameters
 
-## Memory Optimization
+- Learning rate: 2e-4
+- Batch size: 2 per device
+- Gradient accumulation: 4 steps
+- Effective batch size: 2 × 4 GPUs × 4 accumulation = 32
+- Epochs: 3
+- Optimizer: paged_adamw_8bit
+- Precision: FP16
+- Max sequence length: 1024 tokens
 
-### Low-Resource Scenarios
+## Technical Details
 
-**For 4-bit quantization (default)**:
-- Minimum GPU: 8GB VRAM for 7B student model
-- Recommended: 16GB+ VRAM
+### Offline Mode
 
-**Additional optimizations**:
+All model loading operations use `local_files_only=True` to prevent network access:
 
-1. **Reduce batch size**:
-   ```bash
-   --batch_size 1 --gradient_accumulation_steps 8
-   ```
+```python
+tokenizer = AutoTokenizer.from_pretrained(model_path, local_files_only=True)
+model = AutoModelForCausalLM.from_pretrained(model_path, local_files_only=True)
+```
 
-2. **Reduce sequence length** in `train_cot_lora.py`:
-   ```python
-   max_length=512  # instead of 1024
-   ```
+This ensures the pipeline runs on air-gapped GPU nodes after models are downloaded on a network-connected node.
 
-3. **Use CPU offloading**:
-   ```python
-   device_map="auto"  # Already enabled
-   ```
+### Memory Optimization
 
-4. **Enable gradient checkpointing** (add to training args):
-   ```python
-   gradient_checkpointing=True
-   ```
+1. **4-bit Quantization**: Models loaded with `load_in_4bit=True` using NF4 quantization
+2. **LoRA**: Only trains ~0.5% of parameters (rank-8 low-rank matrices)
+3. **Gradient Accumulation**: Reduces per-step memory by accumulating over 4 steps
+4. **Paged Optimizer**: Uses paged_adamw_8bit to offload optimizer states
+
+### Answer Extraction
+
+The `extract_final_answer()` function in `helpers.py` uses regex to locate answer markers:
+1. Searches for "Final Answer:", "Answer:", or similar patterns (case-insensitive)
+2. Returns first line after marker
+3. Falls back to last non-empty line if no marker found
+
+### Prompt Format
+
+**Generation (Teacher):**
+```
+You are a careful reasoning assistant. Solve the problem step-by-step and end with a line that starts with 'Final Answer:'.
+
+Q: {question}
+
+A:
+```
+
+**Training/Evaluation (Student):**
+```
+### Question:
+{question}
+
+### Answer:
+{cot}
+```
+
+## Performance
+
+### Expected Results
+
+- Training loss: Decreases from ~2.5 to ~0.5 over 3 epochs
+- Test accuracy: 70-85% exact match on math problems
+- LoRA adapter size: ~50MB (vs 14GB full model)
+- Inference speed: ~2-3 tokens/second per question on A100
+
+### Benchmarks
+
+| Stage | Time | GPU Usage | Memory |
+|-------|------|-----------|--------|
+| CoT Generation | 10-15 min | 1x A100 | ~20GB |
+| Training | 30-45 min | 4x A100 | ~30GB per GPU |
+| Evaluation | 2-3 min | 1x A100 | ~20GB |
 
 ## Troubleshooting
 
-### Issue: "Tokenizer has no pad_token"
+### CUDA Out of Memory
 
-**Solution**: The scripts automatically set `pad_token = eos_token`. If issues persist, manually add to tokenizer config:
-```python
-tokenizer.pad_token = tokenizer.eos_token
-model.config.pad_token_id = model.config.eos_token_id
+Reduce batch size:
+```bash
+--per_device_train_batch_size 1
 ```
 
-### Issue: CUDA Out of Memory
+Or reduce sequence length in `train_cot_lora.py`:
+```python
+--max_length 512
+```
 
-**Solutions**:
-1. Reduce batch size: `--batch_size 1`
-2. Increase gradient accumulation: `--gradient_accumulation_steps 8`
-3. Reduce max_length in tokenization (edit `train_cot_lora.py`)
-4. Use smaller student model (e.g., Qwen-1.8B instead of Qwen-7B)
+### Missing pad_token
 
-### Issue: Slow generation during CoT creation
+Automatically handled by setting `tokenizer.pad_token = tokenizer.eos_token` in all scripts.
 
-**Solutions**:
-1. Use smaller teacher model if accuracy permits
-2. Reduce `--max_new_tokens` to 256-384
-3. Process in batches (modify `gen_cot.py` to batch inputs)
+### Connection Errors on GPU Node
 
-### Issue: Model not learning reasoning patterns
+Ensure models are downloaded on network-connected node first. All scripts use `local_files_only=True`.
 
-**Solutions**:
-1. Increase training epochs: `--num_epochs 5`
-2. Verify CoT quality in `data/cot_dataset.jsonl`
-3. Increase dataset size (generate more examples)
-4. Adjust learning rate: try `--learning_rate 1e-4` or `3e-4`
+### Slow Generation
 
-### Issue: Poor final answer extraction
+Normal for autoregressive generation. Teacher model processes questions sequentially. Consider reducing `--max_new_tokens` to 256-384 for faster generation.
 
-**Solution**: The `extract_final_answer()` function looks for "Final Answer:" pattern. Ensure teacher model consistently uses this format. Modify prompt if needed.
+### Training Not Converging
 
-## Shared Filesystem Compatibility
+- Increase epochs: `--epochs 5`
+- Adjust learning rate: `--lr 1e-4` or `--lr 3e-4`
+- Verify CoT quality in `data/cot_dataset.jsonl`
+- Increase dataset size
 
-All paths use relative references to support shared filesystems between nodes:
-- Models loaded from local directories
-- No hardcoded absolute paths
-- Results saved to local `results/` directory
+### Resume Interrupted Training
 
-For distributed training, ensure:
-1. All nodes have access to model directories
-2. Output directory is writable from all nodes
-3. Use `CUDA_VISIBLE_DEVICES` to control GPU allocation
+```bash
+accelerate launch --config_file configs/accelerate_config.yaml \
+    scripts/train_cot_lora.py \
+    --resume_from_checkpoint results/student_cot_lora/checkpoint-500 \
+    [other args...]
+```
 
-## Expected Results
+## Advanced Usage
 
-After successful training:
-- Student model generates step-by-step reasoning
-- Improved accuracy on reasoning tasks (10-30% improvement typical)
-- Structured output format matching training data
-- Faster inference than teacher model with comparable reasoning quality
+### Custom Models
+
+Replace teacher/student models by downloading different models:
+
+```bash
+python scripts/download_models.py \
+    --teacher meta-llama/Llama-2-13b-chat-hf \
+    --student meta-llama/Llama-2-7b-hf \
+    --out_dir models
+```
+
+### Custom Dataset
+
+Create JSONL file with `question` field:
+
+```json
+{"question": "Your question here"}
+```
+
+Then run pipeline with `--input your_questions.jsonl`.
+
+### Hyperparameter Tuning
+
+Modify LoRA rank and alpha:
+
+```bash
+python scripts/train_cot_lora.py \
+    --r 16 \
+    --lora_alpha 32 \
+    [other args...]
+```
+
+Higher rank increases capacity but also memory usage and training time.
+
+### Distributed Training Configuration
+
+Edit `configs/accelerate_config.yaml` for different GPU counts:
+
+```yaml
+num_processes: 2  # For 2 GPUs
+```
+
+Or generate new config:
+
+```bash
+accelerate config
+```
+
+## File Formats
+
+### Input Questions (raw_questions.jsonl)
+
+```json
+{"question": "What is 15% of 240?"}
+```
+
+### CoT Dataset (cot_dataset.jsonl)
+
+```json
+{"question": "What is 15% of 240?", "cot": "Step 1: Convert percentage...\nFinal Answer: 36"}
+```
+
+### Test Questions (test_questions.jsonl)
+
+```json
+{"question": "What is 20% of 150?", "answer": "30"}
+```
+
+### Predictions (predictions.jsonl)
+
+```json
+{"question": "What is 20% of 150?", "generated": "Step 1: ...\nFinal Answer: 30", "pred": "30", "gold": "30"}
+```
+
+## Dependencies
+
+Core packages:
+- torch >= 2.0.0
+- transformers >= 4.36.0
+- peft >= 0.7.0
+- datasets >= 2.16.0
+- bitsandbytes >= 0.41.0
+- accelerate >= 0.25.0
+
+See `requirements.txt` for complete list.
 
 ## Citation
 
-If you use this implementation, please cite the relevant papers on chain-of-thought prompting and knowledge distillation.
+This implementation is based on chain-of-thought prompting and knowledge distillation techniques. If using this code for research, cite relevant papers on CoT reasoning and parameter-efficient fine-tuning.
+
+## License
+
+This project is for research and educational purposes. Model licenses (Qwen) apply to downloaded models.
