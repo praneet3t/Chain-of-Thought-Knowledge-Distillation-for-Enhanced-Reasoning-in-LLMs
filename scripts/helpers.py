@@ -1,27 +1,22 @@
+# scripts/helpers.py
 import re
 from typing import Optional
 
-
-def extract_final_answer(text: str) -> str:
+def extract_final_answer(generated_text: str) -> str:
     """
-    Extract the final answer from generated chain-of-thought text.
-    
-    Args:
-        text: Generated text containing reasoning and final answer
-        
-    Returns:
-        Cleaned final answer string
+    Extract final answer from generation. Looks for 'Final Answer:' (case-insensitive).
+    If not found, returns the last non-empty line.
     """
-    # Try to find "Final Answer:" pattern (case-insensitive)
-    pattern = r'final\s+answer\s*:\s*(.+?)(?:\n|$)'
-    match = re.search(pattern, text, re.IGNORECASE | re.DOTALL)
-    
-    if match:
-        # Get first line after "Final Answer:"
-        answer = match.group(1).strip()
-        first_line = answer.split('\n')[0].strip()
-        return first_line
-    
-    # Fallback: return last non-empty line
-    lines = [line.strip() for line in text.split('\n') if line.strip()]
-    return lines[-1] if lines else ""
+    if generated_text is None:
+        return ""
+    s = generated_text.strip()
+    # common markers
+    markers = [r"Final Answer[:\-\s]*", r"Answer[:\-\s]*", r"Answer\s*\(final\)[:\-\s]*"]
+    for m in markers:
+        match = re.search(m + r"(.*)$", s, flags=re.IGNORECASE | re.DOTALL)
+        if match:
+            ans = match.group(1).strip()
+            return ans.splitlines()[0].strip()
+    # fallback: last non-empty line
+    lines = [l.strip() for l in s.splitlines() if l.strip()]
+    return lines[-1] if lines else s

@@ -1,164 +1,104 @@
-import argparse
-import json
-import os
+# scripts/train_cot_lora.py
+"""
+Train student with LoRA. Designed for Accelerate multi-GPU.
+Loads student model (4-bit via bitsandbytes if available) and applies PEFT LoRA.
+Saves checkpoints to --out_dir. Supports --resume_from_checkpoint.
+"""
+
+import argparse, os
 from pathlib import Path
+import json
 import torch
-from transformers import (
-    AutoModelForCausalLM,
-    AutoTokenizer,
-    TrainingArguments,
-    Trainer,
-    BitsAndBytesConfig
-)
+from datasets import load_dataset
+from transformers import AutoTokenizer, DataCollatorForLanguageModeling, TrainingArguments, Trainer, AutoConfig, AutoModelForCausalLM
 from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
-from datasets import Dataset
+import math
 
+def make_example(example, tokenizer, max_length=1024):
+    q = example["question"].strip()
+    cot = example["cot"].strip()
+    text = f"### Question:\n{q}\n\n### Answer:\n{cot}\n"
+    enc = tokenizer(text, truncation=True, max_length=max_length, padding="max_length")
+    enc["labels"] = enc["input_ids"].copy()
+    return enc
 
-def format_training_example(question: str, cot: str) -> str:
-    """Format question and CoT into training format."""
-    return f"### Question:\n{question}\n\n### Answer:\n{cot}\n"
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--student_dir", default="models/student")
+    parser.add_argument("--data", default="data/cot_dataset.jsonl")
+    parser.add_argument("--out_dir", default="results/student_cot_lora")
+    parser.add_argument("--per_device_train_batch_size", type=int, default=2)
+    parser.add_argument("--epochs", type=int, default=3)
+    parser.add_argument("--lr", type=float, default=2e-4)
+    parser.add_argument("--r", type=int, default=8)
+    parser.add_argument("--lora_alpha", type=int, default=16)
+    parser.add_argument("--max_length", type=int, default=1024)
+    parser.add_argument("--resume_from_checkpoint", default=None)
+    args = parser.parse_args()
 
+    out_dir = Path(args.out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
 
-def load_cot_dataset(file_path: str):
-    """Load CoT dataset from JSONL file."""
-    data = []
-    with open(file_path, 'r', encoding='utf-8') as f:
-        for line in f:
-            data.append(json.loads(line))
-    return data
-
-
-def train_student_model(
-    student_model_path: str,
-    cot_dataset_path: str,
-    output_dir: str,
-    num_epochs: int = 3,
-    batch_size: int = 4,
-    learning_rate: float = 2e-4
-):
-    """Train student model with LoRA on CoT dataset."""
-    
-    print(f"Loading student model from {student_model_path}...")
-    
-    # Configure 4-bit quantization
-    bnb_config = BitsAndBytesConfig(
-        load_in_4bit=True,
-        bnb_4bit_quant_type="nf4",
-        bnb_4bit_compute_dtype=torch.float16,
-        bnb_4bit_use_double_quant=True
-    )
-    
-    # Load model and tokenizer (offline mode)
-    tokenizer = AutoTokenizer.from_pretrained(
-        student_model_path,
-        trust_remote_code=True,
-        local_files_only=True
-    )
-    model = AutoModelForCausalLM.from_pretrained(
-        student_model_path,
-        quantization_config=bnb_config,
-        device_map="auto",
-        trust_remote_code=True,
-        local_files_only=True
-    )
-    
-    # Set pad_token to eos_token if missing
-    if tokenizer.pad_token is None:
+    print("Loading tokenizer (local files only)...")
+    tokenizer = AutoTokenizer.from_pretrained(args.student_dir, use_fast=False, local_files_only=True)
+    if tokenizer.pad_token_id is None:
         tokenizer.pad_token = tokenizer.eos_token
-        model.config.pad_token_id = model.config.eos_token_id
-    
-    # Prepare model for k-bit training
+
+    print("Loading student model (4-bit if possible)...")
+    model = AutoModelForCausalLM.from_pretrained(
+        args.student_dir,
+        load_in_4bit=True,
+        device_map="auto",
+        local_files_only=True,
+    )
     model = prepare_model_for_kbit_training(model)
-    
-    # Configure LoRA
+
     lora_config = LoraConfig(
-        r=8,
-        lora_alpha=16,
+        r=args.r,
+        lora_alpha=args.lora_alpha,
         target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "up_proj", "down_proj"],
         lora_dropout=0.05,
         bias="none",
-        task_type="CAUSAL_LM"
+        task_type="CAUSAL_LM",
     )
-    
     model = get_peft_model(model, lora_config)
-    model.print_trainable_parameters()
-    
-    # Load and format dataset
-    print(f"Loading CoT dataset from {cot_dataset_path}...")
-    cot_data = load_cot_dataset(cot_dataset_path)
-    
-    formatted_texts = [
-        format_training_example(item['question'], item['cot'])
-        for item in cot_data
-    ]
-    
-    # Tokenize dataset
-    def tokenize_function(examples):
-        outputs = tokenizer(
-            examples['text'],
-            truncation=True,
-            max_length=1024,
-            padding="max_length"
-        )
-        outputs["labels"] = outputs["input_ids"].copy()
-        return outputs
-    
-    dataset = Dataset.from_dict({'text': formatted_texts})
-    tokenized_dataset = dataset.map(tokenize_function, batched=True, remove_columns=['text'])
-    
-    # Training arguments
+    trainable = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    print("PEFT LoRA applied. Trainable params:", trainable)
+
+    print("Loading dataset...")
+    ds = load_dataset("json", data_files=args.data)["train"]
+    ds = ds.map(lambda ex: make_example(ex, tokenizer, max_length=args.max_length), remove_columns=ds.column_names)
+
+    data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm=False)
+
     training_args = TrainingArguments(
-        output_dir=output_dir,
-        num_train_epochs=num_epochs,
-        per_device_train_batch_size=batch_size,
+        output_dir=str(out_dir),
+        per_device_train_batch_size=args.per_device_train_batch_size,
         gradient_accumulation_steps=4,
-        learning_rate=learning_rate,
+        num_train_epochs=args.epochs,
+        learning_rate=args.lr,
         fp16=True,
-        logging_steps=10,
-        save_strategy="epoch",
-        save_total_limit=2,
-        report_to="none",
-        optim="paged_adamw_8bit",
-        warmup_steps=50,
-        logging_dir=f"{output_dir}/logs",
-        ddp_find_unused_parameters=False
+        logging_steps=50,
+        save_strategy="steps",
+        save_steps=500,
+        save_total_limit=3,
+        remove_unused_columns=False,
+        report_to=[],
+        dataloader_num_workers=2,
     )
-    
-    # Train
+
     trainer = Trainer(
         model=model,
         args=training_args,
-        train_dataset=tokenized_dataset,
-        tokenizer=tokenizer
+        train_dataset=ds,
+        data_collator=data_collator,
     )
-    
-    print("Starting training...")
-    trainer.train()
-    
-    # Save final model
-    print(f"Saving model to {output_dir}...")
-    model.save_pretrained(output_dir)
-    tokenizer.save_pretrained(output_dir)
-    
-    print("✓ Training complete!")
 
+    trainer.train(resume_from_checkpoint=args.resume_from_checkpoint)
+    print("Training finished. Saving...")
+    model.save_pretrained(out_dir)
+    tokenizer.save_pretrained(out_dir)
+    print("Saved to", out_dir)
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Train student model with LoRA on CoT dataset")
-    parser.add_argument("--student_model", type=str, required=True, help="Path to student model directory")
-    parser.add_argument("--cot_dataset", type=str, required=True, help="Path to CoT dataset JSONL file")
-    parser.add_argument("--output_dir", type=str, required=True, help="Output directory for trained model")
-    parser.add_argument("--num_epochs", type=int, default=3, help="Number of training epochs")
-    parser.add_argument("--batch_size", type=int, default=4, help="Training batch size")
-    parser.add_argument("--learning_rate", type=float, default=2e-4, help="Learning rate")
-    
-    args = parser.parse_args()
-    
-    train_student_model(
-        student_model_path=args.student_model,
-        cot_dataset_path=args.cot_dataset,
-        output_dir=args.output_dir,
-        num_epochs=args.num_epochs,
-        batch_size=args.batch_size,
-        learning_rate=args.learning_rate
-    )
+    main()

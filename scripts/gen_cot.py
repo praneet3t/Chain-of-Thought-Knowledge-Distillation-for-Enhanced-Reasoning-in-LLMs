@@ -1,94 +1,79 @@
-import argparse
-import json
+# scripts/gen_cot.py
+"""
+Generate chain-of-thought traces using the teacher model.
+Run on GPU node (or single GPU). Uses local_files_only=True so it won't try to go online.
+Supports --start_index to resume from partial output.
+"""
+
+import argparse, json, os
 from pathlib import Path
-from tqdm import tqdm
+from transformers import AutoTokenizer, AutoModelForCausalLM
 import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from tqdm import tqdm
 
+PROMPT_PREFIX = (
+    "You are a careful reasoning assistant. Solve the problem step-by-step and end with a line that starts with 'Final Answer:'.\n\n"
+    "Q: {question}\n\nA:"
+)
 
-PROMPT_PREFIX = "You are a careful reasoning assistant. Solve the problem step-by-step and end with a line that starts with 'Final Answer:'.\n\nQ: {question}\n\nA:"
-
-
-def generate_cot(
-    teacher_model_path: str,
-    input_file: str,
-    output_file: str,
-    max_new_tokens: int = 512
-):
-    """Generate chain-of-thought reasoning using teacher model."""
-    
-    print(f"Loading teacher model from {teacher_model_path}...")
-    tokenizer = AutoTokenizer.from_pretrained(
-        teacher_model_path,
-        trust_remote_code=True,
-        local_files_only=True
+def generate_for_question(model, tokenizer, question, max_new_tokens=256, temperature=0.2, device=None):
+    prompt = PROMPT_PREFIX.format(question=question)
+    inputs = tokenizer(prompt, return_tensors="pt", truncation=True, max_length=1024).to(device)
+    gen_ids = model.generate(
+        **inputs,
+        max_new_tokens=max_new_tokens,
+        do_sample=False,
+        temperature=temperature,
+        eos_token_id=tokenizer.eos_token_id,
+        pad_token_id=tokenizer.eos_token_id,
+        top_p=1.0,
+        repetition_penalty=1.03,
     )
-    model = AutoModelForCausalLM.from_pretrained(
-        teacher_model_path,
-        torch_dtype=torch.float16,
-        device_map="auto",
-        trust_remote_code=True,
-        local_files_only=True
-    )
+    out = tokenizer.decode(gen_ids[0], skip_special_tokens=True)
+    out_only = out[len(prompt):].strip() if out.startswith(prompt) else out
+    return out_only
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--teacher_dir", default="models/teacher")
+    parser.add_argument("--input", default="data/raw_questions.jsonl")
+    parser.add_argument("--output", default="data/cot_dataset.jsonl")
+    parser.add_argument("--num_samples", type=int, default=None)
+    parser.add_argument("--max_new_tokens", type=int, default=256)
+    parser.add_argument("--device", default="cuda")
+    parser.add_argument("--start_index", type=int, default=0, help="skip already-generated lines")
+    args = parser.parse_args()
+
+    out_path = Path(args.output)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+
+    print("Loading tokenizer & model (local files only)...")
+    tokenizer = AutoTokenizer.from_pretrained(args.teacher_dir, use_fast=False, local_files_only=True)
+    model = AutoModelForCausalLM.from_pretrained(args.teacher_dir, device_map="auto", torch_dtype=torch.float16, local_files_only=True)
     model.eval()
-    
-    # Load input questions
-    print(f"Loading questions from {input_file}...")
-    questions = []
-    with open(input_file, 'r', encoding='utf-8') as f:
-        for line in f:
-            questions.append(json.loads(line))
-    
-    # Generate CoT for each question
-    results = []
-    print(f"Generating chain-of-thought reasoning for {len(questions)} questions...")
-    
-    for item in tqdm(questions):
-        question = item['question']
-        prompt = PROMPT_PREFIX.format(question=question)
-        
-        inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
-        
-        with torch.no_grad():
-            outputs = model.generate(
-                **inputs,
-                max_new_tokens=max_new_tokens,
-                temperature=0.2,
-                do_sample=False,
-                pad_token_id=tokenizer.eos_token_id
-            )
-        
-        generated = tokenizer.decode(outputs[0], skip_special_tokens=True)
-        # Extract only the generated answer part (remove prompt)
-        cot = generated[len(prompt):].strip()
-        
-        results.append({
-            'question': question,
-            'cot': cot,
-            **{k: v for k, v in item.items() if k != 'question'}
-        })
-    
-    # Save results
-    print(f"Saving results to {output_file}...")
-    with open(output_file, 'w', encoding='utf-8') as f:
-        for result in results:
-            f.write(json.dumps(result, ensure_ascii=False) + '\n')
-    
-    print(f"✓ Generated {len(results)} chain-of-thought examples")
+    device = next(model.parameters()).device
 
+    # read input
+    with open(args.input, "r", encoding="utf-8") as fin:
+        all_qs = [json.loads(line)["question"] for line in fin]
+
+    total = len(all_qs) if args.num_samples is None else min(args.num_samples, len(all_qs))
+    print(f"Total questions available: {len(all_qs)}, will process: {total}, start_index={args.start_index}")
+
+    # skip already generated
+    start = args.start_index
+    pbar = tqdm(range(start, total))
+    written = 0
+    mode = "a" if start > 0 or out_path.exists() else "w"
+    with open(args.output, mode, encoding="utf-8") as fout:
+        for i in pbar:
+            q = all_qs[i]
+            pbar.set_description(f"Generating {i+1}/{total}")
+            cot = generate_for_question(model, tokenizer, q, max_new_tokens=args.max_new_tokens, device=device)
+            fout.write(json.dumps({"question": q, "cot": cot}, ensure_ascii=False) + "\n")
+            fout.flush()
+            written += 1
+    print(f"Done. Generated {written} examples. Saved to {args.output}")
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Generate CoT reasoning using teacher model")
-    parser.add_argument("--teacher_model", type=str, required=True, help="Path to teacher model directory")
-    parser.add_argument("--input_file", type=str, required=True, help="Input JSONL file with questions")
-    parser.add_argument("--output_file", type=str, required=True, help="Output JSONL file for CoT dataset")
-    parser.add_argument("--max_new_tokens", type=int, default=512, help="Maximum tokens to generate")
-    
-    args = parser.parse_args()
-    
-    generate_cot(
-        teacher_model_path=args.teacher_model,
-        input_file=args.input_file,
-        output_file=args.output_file,
-        max_new_tokens=args.max_new_tokens
-    )
+    main()

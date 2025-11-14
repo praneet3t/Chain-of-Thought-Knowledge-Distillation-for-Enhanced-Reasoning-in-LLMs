@@ -1,58 +1,52 @@
-# scripts/download_models_safe.py
-"""
-Download model repository files from Hugging Face to a local folder WITHOUT loading into memory.
-Run on the net node (internet access).
-"""
-
-import os
+# scripts/download_models.py
+import argparse
 import shutil
 from pathlib import Path
 from huggingface_hub import snapshot_download
 
-def download_model_files(repo_id: str, dest_dir: str, allow_patterns=None):
-    """
-    Uses snapshot_download to fetch model repo files. Copies result into dest_dir.
-    - repo_id: 'Qwen/Qwen-14B-Chat'
-    - dest_dir: local path to copy files into
-    - allow_patterns: list of glob patterns (optional) to restrict what is downloaded
-    """
-    dest = Path(dest_dir).expanduser().resolve()
+def download_repo(repo_id: str, dest: Path, allow_patterns=None, repo_type="model", force=False):
+    dest = dest.expanduser().resolve()
     dest.parent.mkdir(parents=True, exist_ok=True)
-    print(f"\nDownloading repo `{repo_id}` into temporary cache (may take long)...")
-    # snapshot_download will place the repo under HF cache directory; returns path to that folder.
+    print(f"Downloading repo '{repo_id}' -> {dest}")
     cache_path = snapshot_download(
         repo_id,
-        repo_type="model",
-        allow_patterns=allow_patterns,  # None downloads everything
+        repo_type=repo_type,
+        allow_patterns=allow_patterns,
         resume_download=True,
-        force_download=False,
+        force_download=force,
     )
-    print(f"Snapshot downloaded to cache: {cache_path}")
-    # copy to dest (merge if dest exists)
-    print(f"Copying files to final destination: {dest}")
+    print(f"Snapshot in HF cache: {cache_path}")
+    print("Copying to destination (merge)...")
     shutil.copytree(cache_path, dest, dirs_exist_ok=True)
-    print(f"Done. Files available at: {dest}\n")
+    print("Copied.")
 
-if __name__ == "__main__":
-    project_root = Path(__file__).parent.parent
-    models_root = project_root / "models"
-    teacher_dest = models_root / "teacher"
-    student_dest = models_root / "student"
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--teacher", default="Qwen/Qwen-14B-Chat")
+    parser.add_argument("--student", default="Qwen/Qwen-7B")
+    parser.add_argument("--out_dir", default="models")
+    parser.add_argument("--force", action="store_true")
+    args = parser.parse_args()
 
-    # OPTIONAL: restrict to typical model files - helps skip large unrelated files
+    out = Path(args.out_dir)
+
+    # Patterns - only typical files (saves time)
     patterns = [
-        "*.json", "config.json", "tokenizer*", "*.txt", "*.py",
+        "*.json", "*.txt", "tokenizer*", "special_tokens_map.json",
         "*.bin", "*.safetensors", "pytorch_model*.bin", "pytorch_model*.safetensors",
-        "generation_config.json", "special_tokens_map.json", "vocab.json"
+        "config.json", "generation_config.json", "*.model"
     ]
 
-    print("="*60)
-    print("Downloading teacher model repo (Qwen-14B-Chat)...")
-    download_model_files("Qwen/Qwen-14B-Chat", str(teacher_dest), allow_patterns=patterns)
+    teacher_dest = out / "teacher"
+    student_dest = out / "student"
 
-    print("Downloading student model repo (Qwen-7B)...")
-    download_model_files("Qwen/Qwen-7B", str(student_dest), allow_patterns=patterns)
+    print("Downloading teacher model...")
+    download_repo(args.teacher, teacher_dest, allow_patterns=patterns, force=args.force)
 
-    print("\nALL MODELS DOWNLOADED (files only).")
-    print("Now copy/verify these folders are visible to your offline GPU node.")
-    print("="*60)
+    print("Downloading student model...")
+    download_repo(args.student, student_dest, allow_patterns=patterns, force=args.force)
+
+    print("\n✅ All done. Verify the folders under", out)
+
+if __name__ == "__main__":
+    main()

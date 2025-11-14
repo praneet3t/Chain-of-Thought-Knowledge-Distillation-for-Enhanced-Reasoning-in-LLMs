@@ -1,127 +1,62 @@
-import argparse
-import json
+# scripts/eval_cot.py
+"""
+Evaluate a base model with optional LoRA adapter (PEFT).
+Supports local_files_only so it runs on an offline GPU node.
+Outputs JSONL with fields: question, generated, pred, gold (if provided).
+"""
+
+import argparse, json
 from pathlib import Path
-from tqdm import tqdm
-import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
+import torch
 from peft import PeftModel
-from helpers import extract_final_answer
+from scripts.helpers import extract_final_answer
 
+PROMPT_PREFIX = "### Question:\n{question}\n\n### Answer:\n"
 
-def evaluate_model(
-    base_model_path: str,
-    lora_model_path: str,
-    test_file: str,
-    output_file: str,
-    max_new_tokens: int = 512
-):
-    """Evaluate fine-tuned model on test questions."""
-    
-    print(f"Loading base model from {base_model_path}...")
-    tokenizer = AutoTokenizer.from_pretrained(
-        base_model_path,
-        trust_remote_code=True,
-        local_files_only=True
-    )
-    base_model = AutoModelForCausalLM.from_pretrained(
-        base_model_path,
-        torch_dtype=torch.float16,
-        device_map="auto",
-        trust_remote_code=True,
-        local_files_only=True
-    )
-    
-    print(f"Loading LoRA weights from {lora_model_path}...")
-    model = PeftModel.from_pretrained(base_model, lora_model_path)
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--base_model", required=True, help="path to base student model (local)")
+    parser.add_argument("--lora_model", default=None, help="path to LoRA adapter dir (local)")
+    parser.add_argument("--input", default="data/test_questions.jsonl")
+    parser.add_argument("--output", default="results/predictions.jsonl")
+    parser.add_argument("--max_new_tokens", type=int, default=200)
+    args = parser.parse_args()
+
+    tokenizer = AutoTokenizer.from_pretrained(args.base_model, use_fast=False, local_files_only=True)
+    model = AutoModelForCausalLM.from_pretrained(args.base_model, device_map="auto", local_files_only=True)
     model.eval()
-    
-    # Set pad_token if missing
-    if tokenizer.pad_token is None:
-        tokenizer.pad_token = tokenizer.eos_token
-    
-    # Load test questions
-    print(f"Loading test questions from {test_file}...")
-    test_data = []
-    with open(test_file, 'r', encoding='utf-8') as f:
-        for line in f:
-            test_data.append(json.loads(line))
-    
-    # Evaluate
-    results = []
-    correct = 0
-    total = 0
-    has_gold_answers = 'answer' in test_data[0]
-    
-    print(f"Evaluating on {len(test_data)} questions...")
-    
-    for item in tqdm(test_data):
-        question = item['question']
-        prompt = f"### Question:\n{question}\n\n### Answer:\n"
-        
-        inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
-        
-        with torch.no_grad():
-            outputs = model.generate(
-                **inputs,
-                max_new_tokens=max_new_tokens,
-                temperature=0.2,
-                do_sample=False,
-                pad_token_id=tokenizer.eos_token_id
-            )
-        
-        generated = tokenizer.decode(outputs[0], skip_special_tokens=True)
-        # Extract only the generated answer part
-        generated_text = generated[len(prompt):].strip()
-        
-        # Extract final answer
-        prediction = extract_final_answer(generated_text)
-        
-        result = {
-            'question': question,
-            'generated_text': generated_text,
-            'prediction': prediction
-        }
-        
-        # Calculate accuracy if gold answers provided
-        if has_gold_answers:
-            gold_answer = str(item['answer']).strip()
-            result['gold_answer'] = gold_answer
-            
-            if prediction.lower() == gold_answer.lower():
-                correct += 1
-            total += 1
-        
-        results.append(result)
-    
-    # Save results
-    print(f"Saving results to {output_file}...")
-    with open(output_file, 'w', encoding='utf-8') as f:
-        for result in results:
-            f.write(json.dumps(result, ensure_ascii=False) + '\n')
-    
-    # Print accuracy if applicable
-    if has_gold_answers:
-        accuracy = correct / total * 100
-        print(f"\n✓ Evaluation complete!")
-        print(f"Accuracy: {correct}/{total} = {accuracy:.2f}%")
-    else:
-        print(f"\n✓ Evaluation complete! Generated predictions for {len(results)} questions")
 
+    if args.lora_model:
+        print("Applying PEFT adapter from", args.lora_model)
+        model = PeftModel.from_pretrained(model, args.lora_model, local_files_only=True)
+
+    fout = open(args.output, "w", encoding="utf-8")
+    total = 0
+    correct = 0
+    with open(args.input, "r", encoding="utf-8") as fin:
+        for line in fin:
+            obj = json.loads(line)
+            question = obj["question"]
+            gold = obj.get("answer", None)
+            prompt = PROMPT_PREFIX.format(question=question)
+            inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
+            out_ids = model.generate(**inputs, max_new_tokens=args.max_new_tokens, temperature=0.0, do_sample=False)
+            out_text = tokenizer.decode(out_ids[0], skip_special_tokens=True)
+            generated = out_text[len(prompt):] if out_text.startswith(prompt) else out_text
+            pred = extract_final_answer(generated)
+            out_record = {"question": question, "generated": generated, "pred": pred}
+            if gold is not None:
+                out_record["gold"] = gold
+                if str(pred).strip() == str(gold).strip():
+                    correct += 1
+            fout.write(json.dumps(out_record, ensure_ascii=False) + "\n")
+            total += 1
+
+    fout.close()
+    if total:
+        print(f"Saved outputs to {args.output}")
+        print("Accuracy:", correct, "/", total, correct/total)
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Evaluate fine-tuned CoT model")
-    parser.add_argument("--base_model", type=str, required=True, help="Path to base student model directory")
-    parser.add_argument("--lora_model", type=str, required=True, help="Path to fine-tuned LoRA model directory")
-    parser.add_argument("--test_file", type=str, required=True, help="Test questions JSONL file")
-    parser.add_argument("--output_file", type=str, required=True, help="Output file for predictions")
-    parser.add_argument("--max_new_tokens", type=int, default=512, help="Maximum tokens to generate")
-    
-    args = parser.parse_args()
-    
-    evaluate_model(
-        base_model_path=args.base_model,
-        lora_model_path=args.lora_model,
-        test_file=args.test_file,
-        output_file=args.output_file,
-        max_new_tokens=args.max_new_tokens
-    )
+    main()
